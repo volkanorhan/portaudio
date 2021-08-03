@@ -21,7 +21,7 @@ This will define the following variables:
   True if the system has the JACK library.
 ``JACK_INCLUDE_DIRS``
   Include directories needed to use JACK.
-``JACK_LIBRARIES``
+``JACK_LINK_LIBRARIES``
   Libraries needed to link to JACK.
 
 Cache Variables
@@ -29,49 +29,40 @@ Cache Variables
 
 The following cache variables may also be set:
 
-``JACK_INCLUDE_DIR``
+``JACK_INCLUDE_DIRS``
   The directory containing ``jack.h``.
-``JACK_LIBRARY``
+``JACK_LINK_LIBRARIES``
   The path to the JACK library.
 
 #]=======================================================================]
 
 find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
-  pkg_check_modules(PC_JACK QUIET jack)
+  pkg_check_modules(JACK jack)
+else()
+  find_path(JACK_INCLUDE_DIRS
+    NAMES jack/jack.h
+    DOC "JACK include directory"
+  )
+  find_library(JACK_LINK_LIBRARIES
+    NAMES jack
+    DOC "JACK library"
+  )
+
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(
+    JACK
+    DEFAULT_MSG
+    JACK_LINK_LIBRARIES
+    JACK_INCLUDE_DIRS
+  )
 endif()
 
-find_path(JACK_INCLUDE_DIR
-  NAMES jack/jack.h
-  PATHS ${PC_JACK_INCLUDE_DIRS}
-  DOC "JACK include directory")
-mark_as_advanced(JACK_INCLUDE_DIR)
+mark_as_advanced(JACK_LINK_LIBRARIES)
+mark_as_advanced(JACK_INCLUDE_DIRS)
 
-find_library(JACK_LIBRARY
-  NAMES jack
-  PATHS ${PC_JACK_LIBRARY_DIRS}
-  DOC "JACK library"
-)
-mark_as_advanced(JACK_LIBRARY)
-
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(
-  JACK
-  DEFAULT_MSG
-  JACK_LIBRARY
-  JACK_INCLUDE_DIR
-)
-
-if(JACK_FOUND)
-  set(JACK_LIBRARIES "${JACK_LIBRARY}")
-  set(JACK_INCLUDE_DIRS "${JACK_INCLUDE_DIR}")
-
-  if(NOT TARGET JACK::jack)
-    add_library(JACK::jack UNKNOWN IMPORTED)
-    set_target_properties(JACK::jack
-      PROPERTIES
-        IMPORTED_LOCATION "${JACK_LIBRARY}"
-        INTERFACE_INCLUDE_DIRECTORIES "${JACK_INCLUDE_DIR}"
-    )
-  endif()
+if(JACK_FOUND AND NOT TARGET JACK::jack)
+  add_library(JACK::jack INTERFACE IMPORTED)
+  target_link_libraries(JACK::jack INTERFACE "${JACK_LINK_LIBRARIES}")
+  target_include_directories(JACK::jack INTERFACE "${JACK_INCLUDE_DIRS}")
 endif()
