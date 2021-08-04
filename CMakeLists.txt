@@ -120,7 +120,7 @@ if(WIN32)
   option(ASIO "Enable support for ASIO" OFF)
   if(ASIO)
     find_package(ASIO)
-    if(NOT ASIO_FOUND)
+    if(NOT TARGET ASIO::asio)
       # The ASIO SDK license allows for downloading it from Steinberg and using it without charge,
       # but it is not allowed to be redistributed.
       if(NOT ASIO_SDK_ZIP_PATH)
@@ -137,21 +137,20 @@ if(WIN32)
           "Reconfigure CMake with -DASIO=OFF to build without ASIO.")
       endif()
       find_package(ASIO)
-      if(NOT ASIO_FOUND)
+      if(NOT TARGET ASIO::asio)
         message(FATAL_ERROR "ASIO SDK not found. "
           "Reconfigure CMake with -DASIO=OFF to build without ASIO.")
       endif()
     endif()
   endif()
   if(ASIO AND ASIO_FOUND)
-    target_link_libraries(PortAudio PRIVATE ole32 uuid)
-    target_include_directories(PortAudio PRIVATE "${ASIO_INCLUDE_DIRS}")
+    target_link_libraries(PortAudio PRIVATE ASIO::asio)
     set(PORTAUDIO_PUBLIC_HEADERS "${PORTAUDIO_PUBLIC_HEADERS}" include/pa_asio.h)
     target_compile_definitions(PortAudio PRIVATE PA_USE_ASIO=1)
     target_sources(PortAudio PRIVATE
       src/hostapi/asio/pa_asio.cpp
       src/hostapi/asio/iasiothiscallresolver.cpp
-      "${ASIO_SOURCE_FILES}"
+      #"${ASIO_SOURCE_FILES}"
     )
   else()
     set(DEF_EXCLUDE_ASIO_SYMBOLS ";")

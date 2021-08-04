@@ -68,17 +68,19 @@ if(ASIO_ROOT)
   set(ASIO_FOUND TRUE)
   message(STATUS "Found ASIO SDK: ${ASIO_ROOT}")
 
-  set(ASIO_INCLUDE_DIRS
-    "${ASIO_ROOT}/common"
-    "${ASIO_ROOT}/host"
-    "${ASIO_ROOT}/host/pc"
-  )
-
-  set(ASIO_SOURCE_FILES
-    "${ASIO_ROOT}/common/asio.cpp"
-    "${ASIO_ROOT}/host/asiodrivers.cpp"
-    "${ASIO_ROOT}/host/pc/asiolist.cpp"
-  )
+  if(ASIO_FOUND AND NOT TARGET ASIO::asio)
+    add_library(ASIO::asio INTERFACE
+      "${ASIO_ROOT}/common/asio.cpp"
+      "${ASIO_ROOT}/host/asiodrivers.cpp"
+      "${ASIO_ROOT}/host/pc/asiolist.cpp"
+    )
+    target_link_libraries(ASIO::asio INTERFACE ole32 uuid)
+    target_include_directories(ASIO::asio INTERFACE
+      "${ASIO_ROOT}/common"
+      "${ASIO_ROOT}/host"
+      "${ASIO_ROOT}/host/pc"
+     )
+  endif()
 else()
   message(STATUS "ASIO SDK NOT found")
 endif()
