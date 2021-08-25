@@ -868,42 +868,42 @@ static PaError GropeDevice( snd_pcm_t* pcm, int isPlug, StreamDirection mode, in
         defaultHighLatency = &devInfo->baseDeviceInfo.defaultHighOutputLatency;
     }
 
-    ENSURE_( alsa_snd_pcm_nonblock( pcm, 0 ), paUnanticipatedHostError );
+//     ENSURE_( alsa_snd_pcm_nonblock( pcm, 0 ), paUnanticipatedHostError );
+//
+//     alsa_snd_pcm_hw_params_alloca( &hwParams );
+//     alsa_snd_pcm_hw_params_any( pcm, hwParams );
 
-    alsa_snd_pcm_hw_params_alloca( &hwParams );
-    alsa_snd_pcm_hw_params_any( pcm, hwParams );
-
-    if( defaultSr >= 0 )
-    {
-        /* Could be that the device opened in one mode supports samplerates that the other mode wont have,
-         * so try again .. */
-        if( SetApproximateSampleRate( pcm, hwParams, defaultSr ) < 0 )
-        {
-            defaultSr = -1.;
-            alsa_snd_pcm_hw_params_any( pcm, hwParams ); /* Clear any params (rate) that might have been set */
-            PA_DEBUG(( "%s: Original default samplerate failed, trying again ..\n", __FUNCTION__ ));
-        }
-    }
-
-    if( defaultSr < 0. )           /* Default sample rate not set */
-    {
-        unsigned int sampleRate = 44100;        /* Will contain approximate rate returned by alsa-lib */
-
-        /* Don't allow rate resampling when probing for the default rate (but ignore if this call fails) */
-        alsa_snd_pcm_hw_params_set_rate_resample( pcm, hwParams, 0 );
-        if( alsa_snd_pcm_hw_params_set_rate_near( pcm, hwParams, &sampleRate, NULL ) < 0 )
-        {
-            result = paUnanticipatedHostError;
-            goto error;
-        }
-        ENSURE_( GetExactSampleRate( hwParams, &defaultSr ), paUnanticipatedHostError );
-    }
-
-    ENSURE_( alsa_snd_pcm_hw_params_get_channels_min( hwParams, &minChans ), paUnanticipatedHostError );
-    ENSURE_( alsa_snd_pcm_hw_params_get_channels_max( hwParams, &maxChans ), paUnanticipatedHostError );
-    assert( maxChans <= INT_MAX );
-    assert( maxChans > 0 );    /* Weird linking issue could cause wrong version of ALSA symbols to be called,
-                                   resulting in zeroed values */
+//     if( defaultSr >= 0 )
+//     {
+//         /* Could be that the device opened in one mode supports samplerates that the other mode wont have,
+//          * so try again .. */
+//         if( SetApproximateSampleRate( pcm, hwParams, defaultSr ) < 0 )
+//         {
+//             defaultSr = -1.;
+//             alsa_snd_pcm_hw_params_any( pcm, hwParams ); /* Clear any params (rate) that might have been set */
+//             PA_DEBUG(( "%s: Original default samplerate failed, trying again ..\n", __FUNCTION__ ));
+//         }
+//     }
+//
+//     if( defaultSr < 0. )           /* Default sample rate not set */
+//     {
+//         unsigned int sampleRate = 44100;        /* Will contain approximate rate returned by alsa-lib */
+//
+//         /* Don't allow rate resampling when probing for the default rate (but ignore if this call fails) */
+//         alsa_snd_pcm_hw_params_set_rate_resample( pcm, hwParams, 0 );
+//         if( alsa_snd_pcm_hw_params_set_rate_near( pcm, hwParams, &sampleRate, NULL ) < 0 )
+//         {
+//             result = paUnanticipatedHostError;
+//             goto error;
+//         }
+//         ENSURE_( GetExactSampleRate( hwParams, &defaultSr ), paUnanticipatedHostError );
+//     }
+//
+//     ENSURE_( alsa_snd_pcm_hw_params_get_channels_min( hwParams, &minChans ), paUnanticipatedHostError );
+//     ENSURE_( alsa_snd_pcm_hw_params_get_channels_max( hwParams, &maxChans ), paUnanticipatedHostError );
+//     assert( maxChans <= INT_MAX );
+//     assert( maxChans > 0 );    /* Weird linking issue could cause wrong version of ALSA symbols to be called,
+//                                    resulting in zeroed values */
 
     /* XXX: Limit to sensible number (ALSA plugins accept a crazy amount of channels)? */
     if( isPlug && maxChans > 128 )
@@ -924,18 +924,18 @@ static PaError GropeDevice( snd_pcm_t* pcm, int isPlug, StreamDirection mode, in
     /* Try low latency values, (sometimes the buffer & period that result are larger) */
     alsaBufferFrames = 512;
     alsaPeriodFrames = 128;
-    ENSURE_( alsa_snd_pcm_hw_params_set_buffer_size_near( pcm, hwParams, &alsaBufferFrames ), paUnanticipatedHostError );
-    ENSURE_( alsa_snd_pcm_hw_params_set_period_size_near( pcm, hwParams, &alsaPeriodFrames, NULL ), paUnanticipatedHostError );
+//     ENSURE_( alsa_snd_pcm_hw_params_set_buffer_size_near( pcm, hwParams, &alsaBufferFrames ), paUnanticipatedHostError );
+//     ENSURE_( alsa_snd_pcm_hw_params_set_period_size_near( pcm, hwParams, &alsaPeriodFrames, NULL ), paUnanticipatedHostError );
     *defaultLowLatency = (double) (alsaBufferFrames - alsaPeriodFrames) / defaultSr;
 
     /* Base the high latency case on values four times larger */
     alsaBufferFrames = 2048;
     alsaPeriodFrames = 512;
     /* Have to reset hwParams, to set new buffer size; need to also set sample rate again */
-    ENSURE_( alsa_snd_pcm_hw_params_any( pcm, hwParams ), paUnanticipatedHostError );
-    ENSURE_( SetApproximateSampleRate( pcm, hwParams, defaultSr ), paUnanticipatedHostError );
-    ENSURE_( alsa_snd_pcm_hw_params_set_buffer_size_near( pcm, hwParams, &alsaBufferFrames ), paUnanticipatedHostError );
-    ENSURE_( alsa_snd_pcm_hw_params_set_period_size_near( pcm, hwParams, &alsaPeriodFrames, NULL ), paUnanticipatedHostError );
+//     ENSURE_( alsa_snd_pcm_hw_params_any( pcm, hwParams ), paUnanticipatedHostError );
+//     ENSURE_( SetApproximateSampleRate( pcm, hwParams, defaultSr ), paUnanticipatedHostError );
+//     ENSURE_( alsa_snd_pcm_hw_params_set_buffer_size_near( pcm, hwParams, &alsaBufferFrames ), paUnanticipatedHostError );
+//     ENSURE_( alsa_snd_pcm_hw_params_set_period_size_near( pcm, hwParams, &alsaPeriodFrames, NULL ), paUnanticipatedHostError );
     *defaultHighLatency = (double) (alsaBufferFrames - alsaPeriodFrames) / defaultSr;
 
     *minChannels = (int)minChans;
